@@ -63,6 +63,19 @@ Manager::Manager(std::shared_ptr<vk::Instance> instance,
     this->mPhysicalDevice = physicalDevice;
     this->mDevice = device;
 
+    //populate mComputeQueues and mComputeQueueFamilyIndices
+    std::vector<vk::QueueFamilyProperties> queueFamilies = this->mPhysicalDevice->getQueueFamilyProperties();
+    uint32_t computeQueueFamilyIndex = -1;
+    for (uint32_t i = 0; i < queueFamilies.size(); ++i) {
+        if (queueFamilies[i].queueFlags & vk::QueueFlagBits::eCompute) {
+            computeQueueFamilyIndex = i;
+            break;
+        }
+    }
+    this->mComputeQueueFamilyIndices.push_back(computeQueueFamilyIndex);
+    std::shared_ptr<vk::Queue> queuePtr = std::make_shared<vk::Queue>(this->mDevice->getQueue(computeQueueFamilyIndex, 0));
+    this->mComputeQueues.push_back(queuePtr);
+
 // Make sure the logger is setup
 #if !KOMPUTE_OPT_LOG_LEVEL_DISABLED
     logger::setupLogger();
